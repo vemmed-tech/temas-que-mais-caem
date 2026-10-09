@@ -1,0 +1,28 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ContactPage from '../components/ContactPage.astro';
+---
+<BaseLayout title="Temas que mais caem | VemMED" description="Informe seus dados para solicitar acesso ao aplicativo sobre os temas que mais caem.">
+  <main id="conteudo">
+    <section class="hero" aria-labelledby="hero-title">
+      <span class="decoration-circle" aria-hidden="true"></span>
+      <span class="decoration-diamond" aria-hidden="true"></span>
+      <div class="hero__inner">
+        <div class="hero__copy">
+          <a class="wordmark" href="#conteudo" aria-label="VemMED, início">
+            <img src="/assets/logo-vemmed.svg" alt="VemMED" />
+          </a>
+          <p class="eyebrow"><span class="eyebrow__dot" aria-hidden="true"></span> ACESSO AO APLICATIVO · VEMMED</p>
+          <h1 id="hero-title">Temas que mais caem</h1>
+          <p class="hero__lead">Preencha seus dados para solicitar acesso ao aplicativo sobre os temas que mais caem.</p>
+        </div>
+        <aside class="capture-panel" id="cadastro" aria-labelledby="panel-title">
+          <p class="capture-panel__eyebrow">ACESSO AO APLICATIVO</p>
+          <h2 id="panel-title">Libere seu acesso</h2>
+          <p class="capture-panel__description">Informe seus dados para solicitar acesso ao aplicativo sobre os temas que mais caem.</p>
+          <ContactPage />
+        </aside>
+      </div>
+    </section>
+  </main>
+</BaseLayout>

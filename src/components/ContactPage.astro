@@ -1,0 +1,61 @@
+<script
+  is:inline
+  type="text/javascript"
+  src="https://mautic.vemmed.com.br/form/generate.js?id=17"
+></script>
+
+<script is:inline>
+  (() => {
+    const form = document.querySelector(
+      '#cadastro .mauticform_wrapper form[id^="mauticform_"]',
+    );
+
+    if (!form) return;
+
+    const name = form.querySelector('[name="mauticform[nome_completo1]"]');
+    const surname = form.querySelector('[name="mauticform[sobrenome]"]');
+    const email = form.querySelector('[name="mauticform[email]"]');
+    const phone = form.querySelector('[name="mauticform[telefone]"]');
+    const phoneLabel = phone?.closest('.mauticform-row')?.querySelector('.mauticform-label');
+
+    if (name) name.autocomplete = 'given-name';
+    if (surname) surname.autocomplete = 'family-name';
+    if (email) email.autocomplete = 'email';
+    if (phone) {
+      phone.autocomplete = 'tel-national';
+      phone.inputMode = 'tel';
+      phone.placeholder = '(11) 99999-9999';
+      phone.maxLength = 15;
+      phone.pattern = '\\(\\d{2}\\) \\d{4,5}-\\d{4}';
+      phone.setAttribute('aria-describedby', 'mauticform_telefone_help');
+
+      const help = document.createElement('span');
+      help.id = 'mauticform_telefone_help';
+      help.className = 'mauticform-helpmessage sr-only';
+      help.textContent = 'Digite DDD e número de celular, com até 11 dígitos.';
+      phone.insertAdjacentElement('afterend', help);
+
+      phone.addEventListener('input', () => {
+        const digits = phone.value.replace(/[^0-9]/g, '').slice(0, 11);
+        if (!digits) {
+          phone.value = '';
+          return;
+        }
+        if (digits.length <= 2) {
+          phone.value = `(${digits}`;
+          return;
+        }
+
+        const areaCode = digits.slice(0, 2);
+        const subscriber = digits.slice(2);
+        const prefixLength = digits.length > 10 ? 5 : 4;
+        const formattedSubscriber = subscriber.length > prefixLength
+          ? `${subscriber.slice(0, prefixLength)}-${subscriber.slice(prefixLength)}`
+          : subscriber;
+        phone.value = `(${areaCode}) ${formattedSubscriber}`;
+      });
+    }
+
+    if (phoneLabel) phoneLabel.textContent = 'Celular';
+  })();
+</script>
