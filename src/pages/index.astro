@@ -2,7 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ContactPage from '../components/ContactPage.astro';
 ---
-<BaseLayout title="Temas que mais caem | VemMED" description="Informe seus dados para solicitar acesso ao aplicativo sobre os temas que mais caem.">
+<BaseLayout title="Temas que mais caem | VemMED" description="Conheça os assuntos recorrentes no ENEM e use essa visão para organizar melhor seu tempo de estudo.">
   <main id="conteudo">
     <section class="hero" aria-labelledby="hero-title">
       <span class="decoration-circle" aria-hidden="true"></span>
@@ -12,14 +12,20 @@ import ContactPage from '../components/ContactPage.astro';
           <a class="wordmark" href="#conteudo" aria-label="VemMED, início">
             <img src="/assets/logo-vemmed.svg" alt="VemMED" />
           </a>
-          <p class="eyebrow"><span class="eyebrow__dot" aria-hidden="true"></span> ACESSO AO APLICATIVO · VEMMED</p>
+          <p class="page-badge">TEMAS QUE MAIS CAEM</p>
           <h1 id="hero-title">Temas que mais caem</h1>
-          <p class="hero__lead">Preencha seus dados para solicitar acesso ao aplicativo sobre os temas que mais caem.</p>
+          <p class="hero__lead">Encontre os 10 temas mais recorrentes de cada matéria do ENEM, com uma lista de revisão de 10 questões por tema. Um ponto de partida para organizar seus estudos e escolher o que faz sentido revisar neste momento.</p>
+          <div class="hero__access" role="note" aria-label="Acesso gratuito">
+            <span class="hero__access-check" aria-hidden="true">✓</span>
+            <div>
+              <p class="hero__access-title">Acesso gratuito.</p>
+              <p class="hero__access-description">Solicite a liberação pelo formulário.</p>
+            </div>
+          </div>
         </div>
         <aside class="capture-panel" id="cadastro" aria-labelledby="panel-title">
           <p class="capture-panel__eyebrow">ACESSO AO APLICATIVO</p>
-          <h2 id="panel-title">Libere seu acesso</h2>
-          <p class="capture-panel__description">Informe seus dados para solicitar acesso ao aplicativo sobre os temas que mais caem.</p>
+          <p class="capture-panel__description" id="panel-title">Solicite acesso ao guia e planeje sua próxima revisão.</p>
           <ContactPage />
         </aside>
       </div>
