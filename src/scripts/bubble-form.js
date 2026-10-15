@@ -1,17 +1,16 @@
-export const BUBBLE_ENDPOINT = 'https://plano-milhoes-25.bubbleapps.io/api/1.1/wf/parceiros';
+export const BUBBLE_ENDPOINT = 'https://flashmedradarquestoes.bubbleapps.io/api/1.1/wf/sign_up_temas_mais_caem';
 
-export function createBubblePayload(form, produto) {
+export function createBubblePayload(form) {
   const value = (field) => String(form.elements.namedItem(`mauticform[${field}]`)?.value ?? '').trim();
   return {
     nome: value('nome_completo1'),
     email: value('email'),
     celular: value('telefone').replace(/\D/g, ''),
-    produto,
     sobrenome: value('sobrenome'),
   };
 }
 
-export function attachBubbleSubmission(form, produto, {
+export function attachBubbleSubmission(form, {
   sdk = () => window.MauticSDK,
   callbacks = (window.MauticFormCallback ??= {}),
   request = window.fetch.bind(window),
@@ -54,7 +53,7 @@ export function attachBubbleSubmission(form, produto, {
     }
     if (!mautic.validateForm(formName, false)) return;
 
-    const payload = createBubblePayload(form, produto);
+    const payload = createBubblePayload(form);
     if (!payload.nome || !payload.sobrenome || !payload.email || !/^\d{10,11}$/.test(payload.celular)) {
       showError('Confira seu nome, sobrenome, e-mail e celular com DDD antes de continuar.');
       return;
@@ -110,11 +109,11 @@ export function attachBubbleSubmission(form, produto, {
   }, true);
 }
 
-export function integrateBubbleForm(produto) {
+export function integrateBubbleForm() {
   const attach = () => {
     const form = document.querySelector('#cadastro .mauticform_wrapper form[data-mautic-form]');
     if (!form) return false;
-    attachBubbleSubmission(form, produto);
+    attachBubbleSubmission(form);
     return true;
   };
   if (attach()) return;

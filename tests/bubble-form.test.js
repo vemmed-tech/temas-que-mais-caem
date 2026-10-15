@@ -1,14 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
 import { BUBBLE_ENDPOINT, createBubblePayload, attachBubbleSubmission } from '../src/scripts/bubble-form.js';
-
-const component = readFileSync(new URL('../src/components/ContactPage.astro', import.meta.url), 'utf8');
-const product = component.match(/integrateBubbleForm\('([^']+)'\)/)[1];
 
 function fixture({ request, valid = true, sdkValid = true } = {}) {
   const inputs = Object.fromEntries(Object.entries({
-    nome_completo1: ' Ana ', sobrenome: ' Souza ', email: ' ana@example.com ', telefone: '(11) 98765-4321',
+    nome_completo1: ' Ana ', sobrenome: ' Souza Lima ', email: ' ana@example.com ', telefone: '(11) 98765-4321',
   }).map(([key, value]) => [`mauticform[${key}]`, { value, readOnly: false }]));
   const button = { disabled: false, innerHTML: 'Liberar Acesso', textContent: '' };
   const error = { textContent: '', setAttribute() {} };
@@ -25,7 +21,7 @@ function fixture({ request, valid = true, sdkValid = true } = {}) {
   const callbacks = {};
   const sdk = { validateForm: (_name, send) => { calls.push(send); return sdkValid; } };
   const requests = [];
-  attachBubbleSubmission(form, product, {
+  attachBubbleSubmission(form, {
     sdk, callbacks,
     request: async (...args) => {
       requests.push(args);
@@ -38,22 +34,22 @@ function fixture({ request, valid = true, sdkValid = true } = {}) {
   };
 }
 
-test('payload has exactly the five agreed fields and the actual page product', () => {
+test('payload sends name, full surname, email and phone without product', () => {
   const f = fixture();
-  assert.deepEqual(createBubblePayload(f.form, product), {
-    nome: 'Ana', email: 'ana@example.com', celular: '11987654321', produto: product, sobrenome: 'Souza',
+  assert.deepEqual(createBubblePayload(f.form), {
+    nome: 'Ana', email: 'ana@example.com', celular: '11987654321', sobrenome: 'Souza Lima',
   });
-  assert.ok(['Testlets', 'Temas que mais caem', 'Simulado VemMED', '5 mais acertadas e 5 mais erradas do ENEM 2025'].includes(product));
 });
 
 test('POST JSON to Bubble before handing off to Mautic', async () => {
   const f = fixture();
   await f.submit();
   const [url, options] = f.requests[0];
+  assert.equal(BUBBLE_ENDPOINT, 'https://flashmedradarquestoes.bubbleapps.io/api/1.1/wf/sign_up_temas_mais_caem');
   assert.equal(url, BUBBLE_ENDPOINT);
   assert.equal(options.method, 'POST');
   assert.equal(options.headers['Content-Type'], 'application/json');
-  assert.deepEqual(JSON.parse(options.body), createBubblePayload(f.form, product));
+  assert.deepEqual(JSON.parse(options.body), createBubblePayload(f.form));
   assert.deepEqual(f.calls, [false, true]);
 });
 
