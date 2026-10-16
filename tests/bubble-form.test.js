@@ -112,43 +112,62 @@ test('retry after a Mautic response error does not duplicate confirmed Bubble da
   assert.deepEqual(f.calls, [false, true, false, true]);
 });
 
-test('Mautic redirects to SPP with the confirmed email only after both submissions succeed', async () => {
+test('successful redirect preserves destination, query and fragment and encodes the submitted email', async () => {
   const f = fixture();
-  f.inputs['mauticform[email]'].value = ' ana+temas@example.com ';
-  await f.submit();
-  const response = { success: true, redirect: 'https://example.com/old-destination' };
-  f.callbacks.isca.onResponseStart(response);
-  assert.equal(response.redirect, 'https://spp.vemmed.com/temas_mais_caem?email=ana%2Btemas%40example.com');
-  assert.equal(new URL(response.redirect).searchParams.get('email'), 'ana+temas@example.com');
-});
-
-test('redirect uses submitted email even if Mautic clears the form', async () => {
-  const f = fixture();
+  f.inputs['mauticform[email]'].value = ' ana+isca@example.com ';
   await f.submit();
   f.inputs['mauticform[email]'].value = '';
-  const response = { success: true };
+  const response = { success: true, redirect: 'https://spp.vemmed.com/produto?origem=isca&email=antigo#conteudo' };
   f.callbacks.isca.onResponseStart(response);
-  assert.equal(new URL(response.redirect).searchParams.get('email'), 'ana@example.com');
+  assert.equal(response.redirect, 'https://spp.vemmed.com/produto?origem=isca&email=ana%2Bisca%40example.com#conteudo');
+  assert.equal(new URL(response.redirect).searchParams.getAll('email').length, 1);
 });
 
-test('Mautic failure or unconfirmed response does not add a redirect', async () => {
+test('relative redirects resolve against the page address', async () => {
+  const f = fixture();
+  f.form.ownerDocument = { baseURI: 'https://captura.example.com/cadastro/' };
+  await f.submit();
+  const response = { success: true, redirect: '/obrigado?produto=isca' };
+  f.callbacks.isca.onResponseStart(response);
+  assert.equal(response.redirect, 'https://captura.example.com/obrigado?produto=isca&email=ana%40example.com');
+});
+
+test('failed or unconfirmed Mautic responses keep the original redirect unchanged', async () => {
   const f = fixture();
   await f.submit();
-  for (const response of [
-    { success: false, errorMessage: 'Erro no Mautic' },
-    { success: true, errorMessage: 'Erro no Mautic' },
-    { success: true, validationErrors: { email: 'Email inválido' } },
+  for (const fields of [
+    { success: false },
+    { success: 0 },
+    { success: true, errorMessage: 'Erro' },
+    { success: true, validationErrors: { email: 'Inválido' } },
     {},
   ]) {
+    const response = { ...fields, redirect: 'https://spp.vemmed.com/produto' };
     f.callbacks.isca.onResponseStart(response);
-    assert.equal(response.redirect, undefined);
+    assert.equal(response.redirect, 'https://spp.vemmed.com/produto');
   }
 });
 
-test('no SPP redirect is added without confirmed Bubble delivery', () => {
+test('no redirect is invented when Mautic has no destination configured', async () => {
   const f = fixture();
+  await f.submit();
   const response = { success: true };
   f.callbacks.isca.onResponseStart(response);
   assert.equal(response.redirect, undefined);
 });
 
+test('email is not added without confirmed Bubble delivery', () => {
+  const f = fixture();
+  const response = { success: true, redirect: 'https://spp.vemmed.com/produto' };
+  f.callbacks.isca.onResponseStart(response);
+  assert.equal(response.redirect, 'https://spp.vemmed.com/produto');
+});
+
+
+test('Mautic numeric success adds email to the thank-you URL', async () => {
+  const f = fixture();
+  await f.submit();
+  const response = { success: 1, redirect: 'https://example.com/obrigado' };
+  f.callbacks.isca.onResponseStart(response);
+  assert.equal(response.redirect, 'https://example.com/obrigado?email=ana%40example.com');
+});

@@ -1,5 +1,4 @@
 export const BUBBLE_ENDPOINT = 'https://flashmedradarquestoes.bubbleapps.io/api/1.1/wf/sign_up_temas_mais_caem';
-export const SPP_PAGE_URL = 'https://spp.vemmed.com/temas_mais_caem';
 
 export function createBubblePayload(form) {
   const value = (field) => String(form.elements.namedItem(`mauticform[${field}]`)?.value ?? '').trim();
@@ -34,14 +33,14 @@ export function attachBubbleSubmission(form, {
     error.textContent = message;
   };
 
-  // Set the destination before Mautic processes a successful response and redirects.
+  // Add the confirmed email before Mautic follows its configured redirect.
   const callback = (callbacks[formName] ??= {});
   const previousResponseStart = callback.onResponseStart;
   callback.onResponseStart = function (response) {
     previousResponseStart?.call(this, response);
-    if (response?.success === true && !response.errorMessage &&
-        !Object.keys(response.validationErrors ?? {}).length && delivered) {
-      const destination = new URL(SPP_PAGE_URL);
+    if ((response?.success === true || response?.success === 1) && !response.errorMessage &&
+        !Object.keys(response.validationErrors ?? {}).length && delivered && response.redirect) {
+      const destination = new URL(response.redirect, form.ownerDocument?.baseURI);
       destination.searchParams.set('email', JSON.parse(delivered).email);
       response.redirect = destination.href;
     }
