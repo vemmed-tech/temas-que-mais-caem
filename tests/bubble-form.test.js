@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { BUBBLE_ENDPOINT, createBubblePayload, attachBubbleSubmission } from '../src/scripts/bubble-form.js';
+import { BUBBLE_ENDPOINT, PRODUCT, createBubblePayload, attachBubbleSubmission } from '../src/scripts/bubble-form.js';
 
 function fixture({ request, valid = true, sdkValid = true } = {}) {
   const inputs = Object.fromEntries(Object.entries({
@@ -119,8 +119,9 @@ test('successful redirect preserves destination, query and fragment and encodes 
   f.inputs['mauticform[email]'].value = '';
   const response = { success: true, redirect: 'https://spp.vemmed.com/produto?origem=isca&email=antigo#conteudo' };
   f.callbacks.isca.onResponseStart(response);
-  assert.equal(response.redirect, 'https://spp.vemmed.com/produto?origem=isca&email=ana%2Bisca%40example.com#conteudo');
+  assert.equal(response.redirect, 'https://spp.vemmed.com/produto?origem=isca&email=ana%2Bisca%40example.com&produto=tema#conteudo');
   assert.equal(new URL(response.redirect).searchParams.getAll('email').length, 1);
+  assert.equal(new URL(response.redirect).searchParams.get('produto'), PRODUCT);
 });
 
 test('relative redirects resolve against the page address', async () => {
@@ -129,7 +130,7 @@ test('relative redirects resolve against the page address', async () => {
   await f.submit();
   const response = { success: true, redirect: '/obrigado?produto=isca' };
   f.callbacks.isca.onResponseStart(response);
-  assert.equal(response.redirect, 'https://captura.example.com/obrigado?produto=isca&email=ana%40example.com');
+  assert.equal(response.redirect, 'https://captura.example.com/obrigado?produto=tema&email=ana%40example.com');
 });
 
 test('failed or unconfirmed Mautic responses keep the original redirect unchanged', async () => {
@@ -164,10 +165,10 @@ test('email is not added without confirmed Bubble delivery', () => {
 });
 
 
-test('Mautic numeric success adds email to the thank-you URL', async () => {
+test('Mautic numeric success adds email and product to the thank-you URL', async () => {
   const f = fixture();
   await f.submit();
   const response = { success: 1, redirect: 'https://example.com/obrigado' };
   f.callbacks.isca.onResponseStart(response);
-  assert.equal(response.redirect, 'https://example.com/obrigado?email=ana%40example.com');
+  assert.equal(response.redirect, 'https://example.com/obrigado?email=ana%40example.com&produto=tema');
 });

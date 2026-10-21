@@ -1,4 +1,5 @@
 export const BUBBLE_ENDPOINT = 'https://flashmedradarquestoes.bubbleapps.io/api/1.1/wf/sign_up_temas_mais_caem';
+export const PRODUCT = 'tema';
 
 export function createBubblePayload(form) {
   const value = (field) => String(form.elements.namedItem(`mauticform[${field}]`)?.value ?? '').trim();
@@ -33,7 +34,7 @@ export function attachBubbleSubmission(form, {
     error.textContent = message;
   };
 
-  // Add the confirmed email before Mautic follows its configured redirect.
+  // Add the confirmed email and product before Mautic follows its configured redirect.
   const callback = (callbacks[formName] ??= {});
   const previousResponseStart = callback.onResponseStart;
   callback.onResponseStart = function (response) {
@@ -42,6 +43,7 @@ export function attachBubbleSubmission(form, {
         !Object.keys(response.validationErrors ?? {}).length && delivered && response.redirect) {
       const destination = new URL(response.redirect, form.ownerDocument?.baseURI);
       destination.searchParams.set('email', JSON.parse(delivered).email);
+      destination.searchParams.set('produto', PRODUCT);
       response.redirect = destination.href;
     }
   };
